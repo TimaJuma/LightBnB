@@ -113,7 +113,7 @@ const getAllProperties = function(options, limit = 10) {
   let queryString = `
   SELECT properties.*, AVG(rating) AS average_rating
   FROM properties
-  LEFT JOIN property_reviews ON properties.id = property_id
+  JOIN property_reviews ON properties.id = property_id
   `;
 
   if (options.city) {
@@ -169,6 +169,7 @@ const getAllProperties = function(options, limit = 10) {
   LIMIT $${queryParams.length};
   `;
 
+  console.log('QUERY: ', queryString, queryParams);
   return pool.query(queryString, queryParams)
     .then(res => {
       return res.rows;
@@ -182,15 +183,32 @@ const getAllProperties = function(options, limit = 10) {
 exports.getAllProperties = getAllProperties;
 
 
-/**
- * Add a property to the database
- * @param {{}} property An object containing all of the property details.
- * @return {Promise<{}>} A promise to the property.
- */
+// Add a property to the database
 const addProperty = function(property) {
-  const propertyId = Object.keys(properties).length + 1;
-  property.id = propertyId;
-  properties[propertyId] = property;
-  return Promise.resolve(property);
+  
+  //get the key from passed object
+  const propertyKeys = [];
+  const propertyValues = [];
+  const queryValues = [];
+
+
+  for (const key in property) {
+    propertyKeys.push(key);
+    propertyValues.push(`$${propertyKeys.length}`);
+    queryValues.push(property[key]);
+  }
+  
+
+  let addPropQuery = `INSERT INTO properties (${propertyKeys.join(', ')}) 
+                        VALUES (${propertyValues.join(', ')})
+                        RETURNING *;
+                        `;
+
+
+  return pool.query(addPropQuery, queryValues)
+  .then(res => {
+    res.rows[0];
+  })
+  .catch(err => console.err('Query error', err));
 }
 exports.addProperty = addProperty;
