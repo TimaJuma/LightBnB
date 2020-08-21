@@ -100,14 +100,7 @@ exports.getAllReservations = getAllReservations;
 
 /// PROPERTIES
 
-/**
- * Get all properties.
- * @param {{}} options An object containing query options.
- * @param {*} limit The number of results to return.
- * @return {Promise<[{}]>}  A promise to the properties.
- */
-
-
+// Get all properties.
 const getAllProperties = function(options, limit = 10) {
   const queryParams = [];
   let queryString = `
